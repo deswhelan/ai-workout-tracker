@@ -8,5 +8,11 @@ ATHLETE = {
     "weight_kg": 75,
     "height_cm": 175,
     "age": 30,
-    "gender": female
+    "gender": "female"
+}
+
+# https://dashboard.sheety.co/
+SHEETY = {
+    "endpoint": "https://api.sheety.co/ABC123/myPythonWorkouts/workouts",
+    "bearer_token": "ABC123"
 }
