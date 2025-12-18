@@ -1,4 +1,5 @@
 import config
+import datetime as dt
 import requests
 
 def get_nutrition_and_exercise_data():
@@ -11,7 +12,8 @@ def get_nutrition_and_exercise_data():
     }
 
     request_body = {
-        "query": str(input("Tell me which exercise you did:\n")),
+        # "query": str(input("Tell me which exercise you did:\n")),
+        "query": "I ran 5 miles",
         "weight_kg": config.ATHLETE["weight_kg"],
         "height_cm": config.ATHLETE["height_cm"],
         "age": config.ATHLETE["age"],
@@ -20,28 +22,32 @@ def get_nutrition_and_exercise_data():
 
     response = requests.post(request_url, json=request_body, headers=headers)
     response.raise_for_status()
-
+    print(f"Nutrition and Exercise API response status code: {response.status_code}")
     return response.json()
 
-def get_sheet_rows():
+def save_workout_to_sheets():
+    """Prompts user for text input representing a workout, converts to nutrition/exercise data via external API call, then saves data to Google Sheets via Sheety API"""
     request_url = config.SHEETY["endpoint"]
 
     headers = {
         "Authorization": f"Bearer {config.SHEETY["bearer_token"]}",
     }
 
-    # request_body = {
-    #     "query": str(input("Tell me which exercise you did:\n")),
-    #     "weight_kg": config.ATHLETE["weight_kg"],
-    #     "height_cm": config.ATHLETE["height_cm"],
-    #     "age": config.ATHLETE["age"],
-    #     "gender": config.ATHLETE["gender"]
-    # }
+    nutrition_and_exercise_data = get_nutrition_and_exercise_data()
+    print(nutrition_and_exercise_data)
 
-    response = requests.get(request_url, headers=headers)
+    request_body = {
+        "workout": {
+            "date": dt.datetime.now().strftime("%x"),
+            "time": dt.datetime.now().strftime("%X"),
+            "exercise": nutrition_and_exercise_data["exercises"][0]["name"],
+            "duration": nutrition_and_exercise_data["exercises"][0]["duration_min"],
+            "calories": nutrition_and_exercise_data["exercises"][0]["nf_calories"]
+        }
+    }
+
+    response = requests.post(request_url, json=request_body, headers=headers)
     response.raise_for_status()
+    print(f"Sheety response status code: {response.status_code}")
 
-    return response.json()
-
-# get_nutrition_and_exercise_data()
-print(get_sheet_rows())
+save_workout_to_sheets()
